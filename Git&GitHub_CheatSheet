@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# Step 1: Ensure the main branch is up to date
+# Switch to the main branch and pull the latest changes from the remote repository
+git checkout main
+git pull origin main
+
+# Step 2: Create a new feature branch
+# Create a new branch for the feature (user profile picture upload) from the main branch
+git checkout -b feature/user-profile-picture
+
+# Step 3: Work on the feature
+# Add all changes to the staging area and commit them with a descriptive message
+# In practice, you would run these after you've implemented parts of the feature
+git add .
+git commit -m "feat: add endpoint for user profile picture upload"
+
+# Step 4: Pull the latest changes from main and merge into the feature branch
+# This ensures the feature branch is up to date with the latest changes in main
+git checkout main
+git pull origin main
+
+# Switch back to the feature branch
+git checkout feature/user-profile-picture
+
+# Merge the latest main branch into the feature branch
+git merge main
+
+# If there are conflicts, they need to be resolved manually.
+# After resolving, commit the merge resolution (skip this step if no conflicts)
+git commit -m "resolve merge conflicts with main"
+
+# Step 5: Push the feature branch to the remote repository
+# This allows others to review the code and opens a pull request
+git push origin feature/user-profile-picture
+
+# Step 6: (Not automated in the script)
+# You would now go to GitHub to create a pull request, describing the feature and linking any related issues.
+# After code review and approval, merge the pull request into the main branch.
+
+# Step 7: Clean up by deleting the feature branch
+# Once the pull request is merged and no longer needed, delete the local and remote feature branch
+git branch -d feature/user-profile-picture
+git push origin --delete feature/user-profile-picture
+
