@@ -29,6 +29,17 @@ A comprehensive collection of developer cheat sheets for quick reference. Each c
   - Common use cases (caching, sessions, rate limiting, leaderboards)
 
 ### Version Control & DevOps
+- **[Docker](./docker_cheat_sheet.md)** - Docker containerization and orchestration
+  - Installation (Linux, macOS, Windows)
+  - Container and image management
+  - Networking and volumes
+  - Docker Compose
+  - Dockerfile best practices
+  - Storage cleanup and optimization
+  - Troubleshooting common issues
+  - Security and performance tips
+  - Multi-platform builds
+
 - **[Git & GitHub](./git_github_cheat_sheet.md)** - Git version control and GitHub workflows
   - Basic Git operations
   - Branching and merging strategies
@@ -91,6 +102,20 @@ Please feel free to submit a pull request.
 
 ## 📝 Cheat Sheet Details
 
+### Docker Cheat Sheet
+Complete Docker containerization guide covering:
+- Installation on multiple platforms
+- Container and image management
+- Networking and storage (volumes)
+- Docker Compose for multi-container apps
+- Dockerfile best practices and optimization
+- Registry operations
+- Storage cleanup strategies
+- Common issues and troubleshooting
+- Security best practices
+- Performance optimization tips
+- Multi-platform builds
+
 ### Django Cheat Sheet
 Comprehensive guide for Django development including:
 - Project initialization and app creation
@@ -152,6 +177,13 @@ Looking for a specific command? Here are some quick links:
 
 ### Most Common Commands
 
+**Docker:**
+- `docker run <image>` - Run a container
+- `docker ps` - List running containers
+- `docker build -t <name> .` - Build image from Dockerfile
+- `docker compose up -d` - Start services with Docker Compose
+- `docker system prune -a` - Clean up unused resources
+
 **Django:**
 - `python manage.py runserver` - Start development server
 - `python manage.py makemigrations` - Create migrations
@@ -179,10 +211,10 @@ Looking for a specific command? Here are some quick links:
 
 ## 📊 Cheat Sheet Statistics
 
-- **Total Cheat Sheets**: 7
-- **Total Commands**: 500+
-- **Examples**: 100+
-- **Use Cases**: 50+
+- **Total Cheat Sheets**: 8
+- **Total Commands**: 700+
+- **Examples**: 150+
+- **Use Cases**: 75+
 
 ## 🎯 Use Cases
 
