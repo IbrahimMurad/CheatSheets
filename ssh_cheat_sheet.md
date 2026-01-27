@@ -234,3 +234,377 @@ Your public key should be there as a single line.
 | `exit` | Exit the SSH session |
 | `~.` | Forcefully exit an SSH session in case it is unresponsive |
 | `Ctrl+D` | Alternative way to exit an SSH session |
+
+## 12. SSH Configuration Best Practices
+
+### Client Configuration (~/.ssh/config)
+```
+# Global defaults
+Host *
+    ServerAliveInterval 60
+    ServerAliveCountMax 3
+    Compression yes
+    
+# Production servers
+Host prod-*
+    User deploy
+    IdentityFile ~/.ssh/id_ed25519_prod
+    StrictHostKeyChecking yes
+    
+# Development servers
+Host dev-*
+    User developer
+    IdentityFile ~/.ssh/id_rsa_dev
+    StrictHostKeyChecking no
+    
+# Specific server example
+Host myserver
+    HostName example.com
+    User admin
+    Port 2222
+    IdentityFile ~/.ssh/id_custom
+    ForwardAgent yes
+    LocalForward 8080 localhost:80
+```
+
+### Server Configuration (/etc/ssh/sshd_config)
+```
+# Security best practices
+Port 2222                          # Change default port
+PermitRootLogin no                 # Disable root login
+PasswordAuthentication no          # Force key-based auth
+PubkeyAuthentication yes
+MaxAuthTries 3
+MaxSessions 5
+ClientAliveInterval 300
+ClientAliveCountMax 2
+
+# Allow specific users only
+AllowUsers deploy developer
+
+# Disable dangerous features
+X11Forwarding no
+PermitEmptyPasswords no
+Protocol 2
+```
+
+## 13. Advanced SSH Features
+
+### ProxyJump (Jump Host)
+```bash
+# Connect through jump host
+ssh -J jumphost@jump.example.com user@target.example.com
+
+# Multiple jump hosts
+ssh -J user1@host1,user2@host2 user3@target
+
+# In config file
+Host target
+    HostName target.example.com
+    ProxyJump jumphost@jump.example.com
+```
+
+### SSH Agent Forwarding
+```bash
+# Enable agent forwarding
+ssh -A user@host
+
+# In config
+Host myserver
+    ForwardAgent yes
+
+# Add keys to agent on login (for macOS)
+# Add to ~/.ssh/config:
+Host *
+    AddKeysToAgent yes
+    UseKeychain yes
+```
+
+### SSH Escape Sequences
+While in an SSH session, type `~` followed by:
+- `~.` - Terminate connection
+- `~^Z` - Suspend SSH
+- `~#` - List forwarded connections
+- `~&` - Background SSH (when waiting for connections to terminate)
+- `~?` - Display all escape characters
+
+### SOCKS Proxy (Dynamic Port Forwarding)
+```bash
+# Create SOCKS proxy
+ssh -D 8080 user@host
+
+# Configure browser to use localhost:8080 as SOCKS5 proxy
+# Now all browser traffic goes through the SSH tunnel
+```
+
+### Remote Command Execution
+```bash
+# Run single command
+ssh user@host "ls -la /var/log"
+
+# Run multiple commands
+ssh user@host "cd /var/www && git pull && sudo systemctl restart nginx"
+
+# Run local script on remote server
+ssh user@host 'bash -s' < local_script.sh
+
+# Pipe local data to remote command
+cat data.txt | ssh user@host "cat > remote_file.txt"
+```
+
+### SSH Multiplexing (Reuse Connections)
+```bash
+# In ~/.ssh/config
+Host *
+    ControlMaster auto
+    ControlPath ~/.ssh/sockets/%r@%h:%p
+    ControlPersist 10m
+
+# First connection creates master
+ssh user@host
+
+# Subsequent connections reuse the master (much faster)
+ssh user@host
+```
+
+## 14. SSH Key Types Comparison
+
+| Key Type | Security | Performance | Compatibility | Recommended |
+| -------- | -------- | ----------- | ------------- | ----------- |
+| RSA 4096 | High | Moderate | Excellent | Yes (legacy systems) |
+| Ed25519 | Very High | Excellent | Good (modern) | Yes (preferred) |
+| ECDSA | High | Good | Good | Acceptable |
+| RSA 2048 | Moderate | Fast | Excellent | No (use 4096+) |
+| DSA | Low | N/A | Deprecated | No |
+
+### When to Use Each Type
+- **Ed25519**: Default choice for new keys (fast, secure, small)
+- **RSA 4096**: When Ed25519 isn't supported (older systems)
+- **ECDSA**: Acceptable alternative, but Ed25519 preferred
+- **Avoid**: DSA (deprecated), RSA 1024/2048 (insufficient)
+
+## 15. Security Hardening
+
+### Fail2Ban Integration
+```bash
+# Install Fail2Ban
+sudo apt install fail2ban
+
+# Configure for SSH
+# /etc/fail2ban/jail.local
+[sshd]
+enabled = true
+port = 2222
+filter = sshd
+logpath = /var/log/auth.log
+maxretry = 3
+bantime = 3600
+```
+
+### Two-Factor Authentication (2FA)
+```bash
+# Install Google Authenticator
+sudo apt install libpam-google-authenticator
+
+# Setup for user
+google-authenticator
+
+# Configure PAM
+# /etc/pam.d/sshd
+auth required pam_google_authenticator.so
+
+# Configure sshd
+# /etc/ssh/sshd_config
+ChallengeResponseAuthentication yes
+AuthenticationMethods publickey,keyboard-interactive
+```
+
+### SSH Certificates (Advanced)
+```bash
+# Generate CA key
+ssh-keygen -t ed25519 -f ca_key
+
+# Sign user key
+ssh-keygen -s ca_key -I user_id -n username -V +52w user_key.pub
+
+# Configure server to trust CA
+# /etc/ssh/sshd_config
+TrustedUserCAKeys /etc/ssh/ca_key.pub
+```
+
+## 16. Monitoring and Auditing
+
+### View SSH Login History
+```bash
+# Last logins
+last -a
+
+# Failed login attempts
+sudo grep "Failed password" /var/log/auth.log
+
+# Successful logins
+sudo grep "Accepted" /var/log/auth.log
+
+# Currently logged in users
+w
+who
+```
+
+### Active SSH Connections
+```bash
+# View active SSH sessions
+netstat -tnpa | grep 'ESTABLISHED.*sshd'
+
+# Or using ss
+ss -tnpa | grep 'ESTABLISHED.*sshd'
+
+# Detailed connection info
+sudo lsof -i :22
+```
+
+## 17. Performance Optimization
+
+### Compression
+```bash
+# Enable compression
+ssh -C user@host
+
+# In config
+Host *
+    Compression yes
+```
+
+### Cipher Selection
+```bash
+# Use faster cipher (less secure, use only on trusted networks)
+ssh -c aes128-gcm@openssh.com user@host
+
+# In config for fast but secure
+Host fastserver
+    Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com
+```
+
+### Keep-Alive Settings
+```bash
+# Prevent connection timeout
+# In ~/.ssh/config
+Host *
+    ServerAliveInterval 60
+    ServerAliveCountMax 3
+    TCPKeepAlive yes
+```
+
+## 18. Automation and Scripts
+
+### Passwordless Automation
+```bash
+# SSH without password prompt (keys must be set up)
+ssh -o BatchMode=yes user@host "command"
+
+# Run script on multiple servers
+for host in server1 server2 server3; do
+    ssh user@$host "uptime"
+done
+```
+
+### Parallel SSH (pssh)
+```bash
+# Install
+sudo apt install pssh
+
+# Run command on multiple hosts
+parallel-ssh -h hosts.txt -l user "uptime"
+
+# Copy file to multiple hosts
+parallel-scp -h hosts.txt file.txt /remote/path/
+```
+
+### Expect Scripts (Handle Interactive Prompts)
+```bash
+#!/usr/bin/expect
+spawn ssh user@host
+expect "password:"
+send "mypassword\r"
+interact
+```
+
+## 19. Cross-Platform Considerations
+
+### Windows (OpenSSH Client)
+```powershell
+# Start SSH Agent (PowerShell as Admin)
+Get-Service ssh-agent | Set-Service -StartupType Automatic
+Start-Service ssh-agent
+
+# Add key
+ssh-add $HOME\.ssh\id_ed25519
+
+# Windows paths in config
+# C:\Users\username\.ssh\config
+```
+
+### macOS Keychain Integration
+```bash
+# Add to ~/.ssh/config
+Host *
+    UseKeychain yes
+    AddKeysToAgent yes
+
+# Add key to keychain
+ssh-add --apple-use-keychain ~/.ssh/id_ed25519
+```
+
+## 20. Useful SSH Tools and Utilities
+
+### autossh (Auto-Reconnect)
+```bash
+# Install
+sudo apt install autossh
+
+# Auto-reconnect tunnel
+autossh -M 0 -f -N -L 8080:localhost:80 user@host
+
+# With monitoring
+autossh -M 20000 -f -N -L 8080:localhost:80 user@host
+```
+
+### mosh (Mobile Shell)
+```bash
+# Install
+sudo apt install mosh
+
+# Connect (UDP-based, better for mobile/unreliable connections)
+mosh user@host
+
+# Survives connection drops and IP changes
+```
+
+### sshfs (Mount Remote Filesystem)
+```bash
+# Install
+sudo apt install sshfs
+
+# Mount remote directory
+sshfs user@host:/remote/path /local/mount/point
+
+# Unmount
+fusermount -u /local/mount/point
+
+# With options
+sshfs user@host:/remote/path /local/mount/point -o reconnect,ServerAliveInterval=15
+```
+
+### rsync over SSH
+```bash
+# Sync directory
+rsync -avz -e ssh /local/path/ user@host:/remote/path/
+
+# Sync with progress
+rsync -avz --progress -e ssh /local/path/ user@host:/remote/path/
+
+# Exclude files
+rsync -avz --exclude='*.log' -e ssh /local/path/ user@host:/remote/path/
+
+# Dry run (test without copying)
+rsync -avz --dry-run -e ssh /local/path/ user@host:/remote/path/
+```
