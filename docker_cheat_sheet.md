@@ -268,8 +268,6 @@ docker run --tmpfs /app:rw,size=64m,mode=1770 <image>
 
 ### Sample docker-compose.yml
 ```yaml
-version: '3.8'
-
 services:
   web:
     image: nginx:alpine
@@ -798,8 +796,11 @@ FROM node:18-alpine
 
 ### Image Security
 ```bash
-# Scan images for vulnerabilities
-docker scan <image>
+# Scan images for vulnerabilities (newer method)
+docker scout cves <image>
+
+# Older method (deprecated)
+# docker scan <image>
 
 # Use official images
 docker pull nginx:latest
@@ -1233,7 +1234,7 @@ docker build -t test . --no-cache --progress=plain
 
 ---
 
-**Last Updated**: January 2026
+**Last Updated**: January 2024
 
 **Maintained by**: Community Contributors
 
