@@ -374,14 +374,14 @@ CREATE INDEX idx_timestamp ON logs USING BRIN(created_at);
 -- Show active connections
 SELECT * FROM pg_stat_activity;
 
-### Terminate connection by PID
-```sql
--- Replace <pid> with actual process ID (e.g., 12345)
+-- Terminate connection by PID (replace 12345 with actual process ID)
 SELECT pg_terminate_backend(pid) 
 FROM pg_stat_activity 
-WHERE pid = 12345;  -- Example: terminate connection with PID 12345
+WHERE pid = 12345;
 ```
 
+### Database and Table Sizes
+```sql
 -- Show database size
 SELECT pg_database_size('<database_name>');
 
