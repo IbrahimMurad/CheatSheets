@@ -103,18 +103,17 @@
 | `config get <parameter>` | Get the value of a configuration parameter |
 | `config set <parameter> <value>` | Set a configuration parameter |
 | `config rewrite` | Rewrite the configuration file with the in-memory configuration |
-| `save` | Synchronously save the dataset to disk |
-| `bgsave` | Asynchronously save the dataset to disk |
 | `shutdown` | Synchronously save the dataset to disk and then shut down the server |
 | `dbsize` | Get the number of keys in the current database |
-| `lastsave` | Get the UNIX timestamp of the last successful save |
+| `client list` | Get the list of client connections |
+| `client setname <name>` | Set current connection name |
 
 ## 12. Persistence and Backup
 | Command | Description |
 | ------- | ----------- |
-| `bgsave` | Create a snapshot in the background |
-| `lastsave` | Get the timestamp of the last successful save |
-| `save` | Synchronously save the dataset (blocks all clients) |
+| `save` | Synchronously save the dataset to disk (blocks all clients) |
+| `bgsave` | Create a snapshot in the background (non-blocking) |
+| `lastsave` | Get the UNIX timestamp of the last successful save |
 | `bgrewriteaof` | Rewrite the append-only file in the background |
 
 ## 13. Advanced Key Operations
