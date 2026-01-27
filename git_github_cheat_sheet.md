@@ -27,6 +27,7 @@
 ### Basic Configuration
 | Command | Description |
 | ------- | ----------- |
+| `git config --global --list` | lists all the key-values in `.gitconfig` file |
 | `git config --global user.name "Your Name"` | Set your name for all commits |
 | `git config --global user.email "your@email.com"` | Set your email for all commits |
 | `git config --global core.editor "vim"` | Set default text editor (vim, nano, code, etc.) |
