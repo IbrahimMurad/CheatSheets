@@ -14,7 +14,306 @@
 | `git diff` | Show changes between working directory and the staging area |
 | `git diff --staged` | Show changes between staging area and the last commit |
 
-## 2. Branching & Merging
+## 2. Git Configuration
+
+### Configuration Levels
+| Command | Description |
+| ------- | ----------- |
+| `git config --system` | System-wide configuration (all users, all repos) - stored in `/etc/gitconfig` |
+| `git config --global` | User-level configuration (all repos for current user) - stored in `~/.gitconfig` |
+| `git config --local` | Repository-level configuration (current repo only) - stored in `.git/config` |
+| `git config --worktree` | Worktree-level configuration (specific worktree) |
+
+### Basic Configuration
+| Command | Description |
+| ------- | ----------- |
+| `git config --global user.name "Your Name"` | Set your name for all commits |
+| `git config --global user.email "your@email.com"` | Set your email for all commits |
+| `git config --global core.editor "vim"` | Set default text editor (vim, nano, code, etc.) |
+| `git config --global init.defaultBranch main` | Set default branch name for new repos (main or master) |
+
+### Viewing Configuration
+| Command | Description |
+| ------- | ----------- |
+| `git config --list` | List all configuration settings |
+| `git config --list --show-origin` | Show configuration values with their file locations |
+| `git config --global --list` | List only global configuration |
+| `git config --local --list` | List only local (repo) configuration |
+| `git config user.name` | Get value of a specific setting |
+| `git config --get-regexp user.*` | Get all settings matching a pattern |
+
+### Editing Configuration
+| Command | Description |
+| ------- | ----------- |
+| `git config --global --edit` | Open global config file in default editor |
+| `git config --local --edit` | Open local config file in default editor |
+| `git config --global --unset key` | Remove a configuration key |
+| `git config --global --unset-all key` | Remove all occurrences of a key |
+
+### Common Configuration Options
+
+#### User Information
+```bash
+git config --global user.name "John Doe"
+git config --global user.email "john@example.com"
+git config --global user.signingkey <gpg-key-id>
+```
+
+#### Core Settings
+```bash
+# Editor
+git config --global core.editor "code --wait"  # VS Code
+git config --global core.editor "vim"
+git config --global core.editor "nano"
+
+# Line endings (important for cross-platform)
+git config --global core.autocrlf true    # Windows (convert LF to CRLF on checkout)
+git config --global core.autocrlf input   # macOS/Linux (convert CRLF to LF on commit)
+git config --global core.autocrlf false   # Don't convert
+
+# Whitespace
+git config --global core.whitespace trailing-space,space-before-tab
+
+# File permissions
+git config --global core.fileMode false   # Ignore file permission changes
+
+# Pagination
+git config --global core.pager 'less -RFX'
+git config --global core.pager ''  # Disable pager
+```
+
+#### Color Settings
+```bash
+# Enable colors
+git config --global color.ui auto
+git config --global color.ui true
+
+# Specific color settings
+git config --global color.branch auto
+git config --global color.diff auto
+git config --global color.status auto
+```
+
+#### Merge and Diff Tools
+```bash
+# Set merge tool
+git config --global merge.tool vimdiff
+git config --global merge.tool meld
+git config --global merge.tool vscode
+git config --global mergetool.vscode.cmd 'code --wait $MERGED'
+
+# Set diff tool
+git config --global diff.tool vimdiff
+git config --global difftool.prompt false
+```
+
+#### Push and Pull Behavior
+```bash
+# Push behavior
+git config --global push.default simple      # Push only current branch
+git config --global push.default current     # Push current branch to same name
+git config --global push.default upstream    # Push to upstream branch
+git config --global push.default nothing     # Don't push anything without explicit ref
+
+# Pull behavior (Git 2.27+)
+git config --global pull.rebase false  # Merge (default)
+git config --global pull.rebase true   # Rebase
+git config --global pull.ff only       # Fast-forward only
+
+# Automatically prune deleted branches on fetch
+git config --global fetch.prune true
+```
+
+#### Credential Management
+```bash
+# Cache credentials (Linux/macOS)
+git config --global credential.helper cache
+git config --global credential.helper 'cache --timeout=3600'
+
+# Store credentials (Linux/macOS)
+git config --global credential.helper store
+
+# Windows credential manager
+git config --global credential.helper manager
+
+# macOS keychain
+git config --global credential.helper osxkeychain
+```
+
+#### Aliases
+```bash
+# Status shorthand
+git config --global alias.st status
+git config --global alias.co checkout
+git config --global alias.br branch
+git config --global alias.ci commit
+
+# More complex aliases
+git config --global alias.unstage 'reset HEAD --'
+git config --global alias.last 'log -1 HEAD'
+git config --global alias.visual 'log --graph --oneline --all --decorate'
+git config --global alias.amend 'commit --amend --no-edit'
+git config --global alias.undo 'reset HEAD~1 --mixed'
+
+# Aliases with shell commands (prefix with !)
+git config --global alias.count '!git log --oneline | wc -l'
+```
+
+#### Commit and GPG Signing
+```bash
+# Enable commit signing
+git config --global commit.gpgsign true
+git config --global user.signingkey <your-gpg-key-id>
+
+# Commit template
+git config --global commit.template ~/.gitmessage.txt
+
+# Verbose commits (show diff in commit message editor)
+git config --global commit.verbose true
+```
+
+#### Performance Settings
+```bash
+# Parallel operations
+git config --global checkout.workers 8
+git config --global fetch.parallel 8
+
+# Optimize for large repos
+git config --global core.preloadIndex true
+git config --global core.fscache true  # Windows
+
+# Git garbage collection
+git config --global gc.auto 256
+git config --global gc.autopacklimit 4
+```
+
+#### URL Rewrites (Shortcuts)
+```bash
+# Rewrite GitHub URLs
+git config --global url."https://github.com/".insteadOf "gh:"
+git config --global url."git@github.com:".insteadOf "gh:"
+
+# Now you can use: git clone gh:user/repo
+```
+
+#### Branch Settings
+```bash
+# Always show remote tracking info
+git config --global branch.autoSetupMerge always
+
+# Automatically rebase on pull for specific branch
+git config --local branch.main.rebase true
+```
+
+#### Submodule Settings
+```bash
+# Automatically update submodules
+git config --global submodule.recurse true
+
+# Parallel submodule operations
+git config --global submodule.fetchJobs 8
+```
+
+#### Advanced Settings
+```bash
+# Rerere (Reuse Recorded Resolution) - remember conflict resolutions
+git config --global rerere.enabled true
+
+# Show more context in diffs
+git config --global diff.context 5
+
+# Use better diff algorithm
+git config --global diff.algorithm histogram
+
+# Show more information in status
+git config --global status.showStash true
+git config --global status.submoduleSummary true
+
+# Default for new branches
+git config --global init.defaultBranch main
+```
+
+### Configuration Examples by Use Case
+
+#### For Open Source Contributors
+```bash
+git config --global user.name "Your Name"
+git config --global user.email "your@email.com"
+git config --global pull.rebase true
+git config --global fetch.prune true
+git config --global diff.colorMoved zebra
+```
+
+#### For Team Collaboration
+```bash
+git config --global user.name "Your Name"
+git config --global user.email "work@company.com"
+git config --global commit.gpgsign true
+git config --global pull.ff only
+git config --global push.default current
+```
+
+#### For Windows Users
+```bash
+git config --global core.autocrlf true
+git config --global core.fscache true
+git config --global credential.helper manager
+git config --global core.longpaths true
+```
+
+#### For macOS Users
+```bash
+git config --global core.autocrlf input
+git config --global credential.helper osxkeychain
+git config --global core.trustctime false
+```
+
+#### For Linux Users
+```bash
+git config --global core.autocrlf input
+git config --global credential.helper cache
+git config --global credential.helper 'cache --timeout=3600'
+```
+
+### Troubleshooting Configuration
+
+#### View All Settings and Origins
+```bash
+# See where each config value comes from
+git config --list --show-origin --show-scope
+
+# Check specific setting
+git config --get user.email
+
+# Check if setting exists
+git config --get-regexp user
+```
+
+#### Reset Configuration
+```bash
+# Remove specific setting
+git config --global --unset user.name
+
+# Remove all matching settings
+git config --global --unset-all core.autocrlf
+
+# Remove entire section
+git config --global --remove-section alias
+```
+
+#### Import/Export Configuration
+```bash
+# Export global config
+cat ~/.gitconfig
+
+# Backup config
+cp ~/.gitconfig ~/.gitconfig.backup
+
+# Import config (copy file)
+cp ~/dotfiles/gitconfig ~/.gitconfig
+```
+
+## 3. Branching & Merging
 | Command | Description |
 | ------- | ----------- |
 | `git branch` | List all branches |
@@ -471,10 +770,16 @@ echo ".env" >> .gitignore
 echo "*.key" >> .gitignore
 echo "secrets.yml" >> .gitignore
 
-# Remove committed secrets
+# Remove committed secrets (⚠️ DANGER: Rewrites history, requires force push)
+# WARNING: This is destructive! Only use on repositories you control.
+# Consider using git-filter-repo (modern, safer alternative) instead:
+# https://github.com/newren/git-filter-repo
 git filter-branch --force --index-filter \
   "git rm --cached --ignore-unmatch path/to/secret" \
   --prune-empty --tag-name-filter cat -- --all
+
+# After running, you MUST force push (dangerous in shared repos):
+# git push --force --all
 ```
 
 ## 25. Troubleshooting

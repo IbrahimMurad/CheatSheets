@@ -255,6 +255,9 @@ Host prod-*
 Host dev-*
     User developer
     IdentityFile ~/.ssh/id_rsa_dev
+    # WARNING: Disabling host key checking is a security risk (MITM attacks)
+    # Only use for isolated development environments or trusted networks
+    # Consider using 'ask' instead: StrictHostKeyChecking ask
     StrictHostKeyChecking no
     
 # Specific server example
@@ -460,6 +463,9 @@ ss -tnpa | grep 'ESTABLISHED.*sshd'
 
 # Detailed connection info
 sudo lsof -i :22
+
+# Kill specific connection (replace 12345 with actual PID)
+sudo kill 12345
 ```
 
 ## 17. Performance Optimization

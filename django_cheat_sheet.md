@@ -310,14 +310,26 @@ CSRF_COOKIE_SECURE = True
 
 ### Reset Migrations
 ```bash
-# Delete all migration files except __init__.py
+# ⚠️ WARNING: DESTRUCTIVE OPERATION - Only use in DEVELOPMENT!
+# ALWAYS backup your database and migration files before running these commands!
+
+# 1. Backup migrations first (recommended)
+cp -r */migrations /path/to/backup/
+
+# 2. Delete all migration files except __init__.py
 find . -path "*/migrations/*.py" -not -name "__init__.py" -delete
 find . -path "*/migrations/*.pyc" -delete
 
-# Drop database and recreate
+# 3. Drop database and recreate (or use flush)
 python manage.py flush
+
+# 4. Create fresh migrations
 python manage.py makemigrations
+
+# 5. Apply migrations
 python manage.py migrate
+
+# NOTE: Never do this in production! Use proper migration management instead.
 ```
 
 ### Fix "Table already exists" Error
