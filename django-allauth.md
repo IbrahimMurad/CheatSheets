@@ -11,6 +11,7 @@ Or,
 ```bash
 pip install "django-allauth[socialaccount]"
 ```
+
 For social authentication.
 
 Or,
@@ -20,7 +21,6 @@ pip install "django-allauth[mfa]"
 ```
 
 For multifactor authentication.
-
 
 ## Important configurations in `settings.py` file
 
@@ -158,6 +158,8 @@ python manage.py migrate
 
 ## Regular Account
 
+### Configurations
+
 ```python
 
 # -------------------------------------------------------------------------------------------------------------------------------
@@ -248,6 +250,9 @@ ACCOUNT_LOGOUT_ON_PASSWORD_CHANGE = False
 # -------------------------------------------------------------------------------------------------------------------------------
 
 ACCOUNT_PASSWORD_INPUT_RENDER_VALUE = False
+"""
+`render_value` parameter as passed to PasswordInput fields.
+"""
 
 ACCOUNT_PASSWORD_RESET_BY_CODE_ENABLED = False
 
@@ -264,6 +269,9 @@ ACCOUNT_PASSWORD_RESET_TOKEN_GENERATOR = "allauth.account.forms.EmailAwarePasswo
 ACCOUNT_CONFIRM_EMAIL_ON_GET = False
 
 ACCOUNT_EMAIL_CONFIRMATION_HMAC = True
+"""
+In order to verify an email address, a key is mailed identifying the email address to be verified. In previous versions, a record was stored in the database for each ongoing email confirmation, keeping track of these keys. Current versions use HMAC based keys that do not require server side state.
+"""
 
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 3
 
@@ -276,6 +284,9 @@ ACCOUNT_EMAIL_VERIFICATION_BY_CODE_MAX_ATTEMPTS = 3
 ACCOUNT_EMAIL_VERIFICATION_BY_CODE_TIMEOUT = 900
 
 ACCOUNT_EMAIL_VERIFICATION_SUPPORTS_CHANGE = False
+"""
+Whether or not the email can be changed after signup at the email verification stage.
+"""
 
 ACCOUNT_EMAIL_VERIFICATION_SUPPORTS_RESEND = False
 
@@ -292,6 +303,10 @@ ACCOUNT_REAUTHENTICATION_REQUIRED = False
 # -------------------------------------------------------------------------------------------------------------------------------
 
 ACCOUNT_AUTHENTICATED_LOGIN_REDIRECTS = True
+"""
+The default behaviour is to redirect authenticated users to LOGIN_REDIRECT_URL when they try accessing login/signup pages.
+By changing this setting to False, logged in users will not be redirected when they access login/signup pages.
+"""
 ACCOUNT_EMAIL_CONFIRMATION_ANONYMOUS_REDIRECT_URL = settings.LOGIN_URL
 ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = None
 ACCOUNT_LOGOUT_REDIRECT_URL = settings.LOGOUT_REDIRECT_URL # or "/"
@@ -301,10 +316,19 @@ ACCOUNT_SIGNUP_REDIRECT_URL = settings.LOGIN_REDIRECT_URL
 # Sending Email
 # -------------------------------------------------------------------------------------------------------------------------------
 ACCOUNT_EMAIL_SUBJECT_PREFIX = "[Site]"
+"""
+Subject-line prefix to use for email messages sent. By default, the name of the current Site (django.contrib.sites) is used.
+"""
 
 ACCOUNT_EMAIL_UNKNOWN_ACCOUNTS = True
+"""
+When enabled, users who attempt to log in with an unknown email address are sent an email message containing a link that allows them to create an account and log in. This setting is disabled by default.
+"""
 
 ACCOUNT_EMAIL_NOTIFICATIONS = False
+"""
+When enabled, account related security notifications, such as “Your password was changed”, including information on user agent / IP address from where the change originated, will be emailed.
+"""
 
 # -------------------------------------------------------------------------------------------------------------------------------
 # Email Addresses
@@ -320,12 +344,195 @@ ACCOUNT_UNIQUE_EMAIL = True
 # -------------------------------------------------------------------------------------------------------------------------------
 ACCOUNT_PRESERVE_USERNAME_CASING = True
 ACCOUNT_USERNAME_BLACKLIST = []
-ACCOUNT_USER_DISPLAY = "a callable returning user.username"
+ACCOUNT_USER_DISPLAY = "some.module.callable_name"  # A callable returning the displayed username
 ACCOUNT_USER_MODEL_EMAIL_FIELD = "email"
 ACCOUNT_USER_MODEL_USERNAME_FIELD = "username"
 ACCOUNT_USERNAME_MIN_LENGTH = 1
-ACCOUNT_USERNAME_VALIDATORS = None
+ACCOUNT_USERNAME_VALIDATORS = None  # 'some.module.validators.custom_username_validators'
+```
+
+### Views
+
+| The view                         | path                                                    | url name                                 | endpoint url                                |
+| -------------------------------- | ------------------------------------------------------- | ---------------------------------------- | ------------------------------------------- |
+| Login                            | `allauth.account.views.LoginView`                       |`account_login`                           | `/accounts/login/`                          |
+| Signup                           | `allauth.account.views.SignupView`                      | `account_signup`                         | `/accounts/signup/`                         |
+| Logout                           | `allauth.account.views.LogoutView`                      | `account_logout`                         | `/accounts/logout/`                         |
+| Password Set                     | `allauth.account.views.PasswordSetView`                 | `account_set_password`                   | `/accounts/password/set/`                   |
+| Password Change                  | `allauth.account.views.PasswordChangeView`              | `account_change_password`                | `/accounts/password/change/`                |
+| Password Reset                   | `allauth.account.views.PasswordResetView`               | `account_reset_password`                 | `/accounts/password/reset/`                 |
+| Password Reset From Key          | `allauth.account.views.PasswordResetFromKeyView`        | `account_reset_password_from_key`        | `/accounts/password/reset/key/`             |
+| Password Reset Done              | `allauth.account.views.PasswordResetDoneView`           | `account_reset_password_done`            | `/accounts/password/reset/done/`            |
+| Password Reset Confirm           | `allauth.account.views.PasswordResetConfirmView`        | `account_reset_password_confirm`         | `/accounts/password/reset/confirm/`         |
+| Password Reset Confirm Done      | `allauth.account.views.PasswordResetConfirmDoneView`    | `account_reset_password_confirm_done`    | `/accounts/password/reset/confirm/done/`    |
+| Email                            | `allauth.account.views.EmailView`                       | `account_email`                          | `/accounts/email/`                          |
+| Email Confirmation               | `allauth.account.views.ConfirmEmailView`                | `account_confirm_email`                  | `/accounts/confirm-email/`                  |
+| Email Confirmation Done          | `allauth.account.views.ConfirmEmailDoneView`            | `account_confirm_email_done`             | `/accounts/confirm-email/done/`             |
+| Email Confirmation From Key      | `allauth.account.views.ConfirmEmailFromKeyView`         | `account_confirm_email_from_key`         | `/accounts/confirm-email/key/`              |
+| Email Confirmation From Key Done | `allauth.account.views.ConfirmEmailFromKeyDoneView`     | `account_confirm_email_from_key_done`    | `/accounts/confirm-email/key/done/`         |
+| Email Confirmation Resend        | `allauth.account.views.EmailConfirmationResendView`     | `account_email_confirmation_resend`      | `/accounts/email/confirmation/resend/`      |
+| Email Confirmation Resend Done   | `allauth.account.views.EmailConfirmationResendDoneView` | `account_email_confirmation_resend_done` | `/accounts/email/confirmation/resend/done/` |
 
 
+### Template Tags
+
+```html
+{% load account %}
+
+{% user_display user %}
+
+Or,
+
+{% load account %}
+
+{% user_display user as user_display %}
+{% blocktrans %}{{ user_display }} has logged in...{% endblocktrans %}
 
 ```
+
+
+### Forms
+
+
+| Action | path                               | used on                   |
+| ------ | ---------------------------------- | ------------------------- |
+| Login  | `allauth.account.forms.LoginForm`  | `account_login` view      |
+| Signup | `allauth.account.forms.SignupForm` | `account_signup` view     |
+
+
+Add Email
+Path:
+allauth.account.forms.AddEmailForm
+
+Used on:
+account_email view.
+
+Example override:
+
+from allauth.account.forms import AddEmailForm
+class MyCustomAddEmailForm(AddEmailForm):
+
+    def save(self, request):
+
+        # Ensure you call the parent class's save.
+        # .save() returns an allauth.account.models.EmailAddress object.
+        email_address_obj = super().save(request)
+
+        # Add your own processing here.
+
+        # You must return the original result.
+        return email_address_obj
+You have access to the following:
+
+self.user is the User object that is logged in.
+
+settings.py:
+
+ACCOUNT_FORMS = {'add_email': 'mysite.forms.MyCustomAddEmailForm'}
+Change Password
+Path:
+allauth.account.forms.ChangePasswordForm
+
+Used on:
+account_change_password view.
+
+Example override:
+
+from allauth.account.forms import ChangePasswordForm
+class MyCustomChangePasswordForm(ChangePasswordForm):
+
+    def save(self):
+
+        # Ensure you call the parent class's save.
+        # .save() does not return anything
+        super().save()
+
+        # Add your own processing here.
+You have access to the following:
+
+self.user is the User object that is logged in.
+
+settings.py:
+
+ACCOUNT_FORMS = {'change_password': 'mysite.forms.MyCustomChangePasswordForm'}
+Set Password
+Path:
+allauth.account.forms.SetPasswordForm
+
+Used on:
+account_set_password view.
+
+Example override:
+
+from allauth.account.forms import SetPasswordForm
+class MyCustomSetPasswordForm(SetPasswordForm):
+
+    def save(self):
+
+        # Ensure you call the parent class's save.
+        # .save() does not return anything
+        super().save()
+
+        # Add your own processing here.
+You have access to the following:
+
+self.user is the User object that is logged in.
+
+settings.py:
+
+ACCOUNT_FORMS = {'set_password': 'mysite.forms.MyCustomSetPasswordForm'}
+Reset Password
+Path:
+allauth.account.forms.ResetPasswordForm
+
+Used on:
+account_reset_password view.
+
+Example override:
+
+from allauth.account.forms import ResetPasswordForm
+class MyCustomResetPasswordForm(ResetPasswordForm):
+
+    def save(self, request):
+
+        # Ensure you call the parent class's save.
+        # .save() returns a string containing the email address supplied
+        email_address = super().save(request)
+
+        # Add your own processing here.
+
+        # Ensure you return the original result
+        return email_address
+You have access to the following:
+
+self.users is a list of all possible User objects with matching email address.
+
+settings.py:
+
+ACCOUNT_FORMS = {'reset_password': 'mysite.forms.MyCustomResetPasswordForm'}
+Reset Password From Key
+Path:
+allauth.account.forms.ResetPasswordKeyForm
+
+Used on:
+account_reset_password view.
+
+Example override:
+
+from allauth.account.forms import ResetPasswordKeyForm
+class MyCustomResetPasswordKeyForm(ResetPasswordKeyForm):
+
+    def save(self):
+
+        # Add your own processing here.
+
+        # Ensure you call the parent class's save.
+        # .save() does not return anything
+        super().save()
+You have access to the following:
+
+self.user is the User object.
+
+settings.py:
+
+ACCOUNT_FORMS = {'reset_password_from_key': 'mysite.forms.MyCustomResetPasswordKeyForm'}
